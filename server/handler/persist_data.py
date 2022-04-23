@@ -7,10 +7,34 @@ name 		 = Agent name
 """
 
 import sqlite3
+from websocket import create_connection
+
+def check(ip:str, port:int):
+    with create_connection(f"ws://{ip}:{pt}") as ws -> tuple:
+    	try:
+	        # Send check for check if is an valid websocket server
+	        ws.send("Check")
+
+	        # Get output and check
+	        resp = ws.recv()
+
+	        if "ok" in resp:
+	        	ws.close()
+	        	
+	        	return (0, "sucess")
+
+	        else:
+	        	ws.close()
+
+	        	return (1, "cant connect to agent")
+	    
+	    except Exception as err:
+	    	return (1, err)
 
 class Agents:
+
 	def __init__(self):
-		self.agents_conn = sqlite3.connect('data/agents.db')
+		self.agents_conn = sqlite3.connect('data/agents.db', check_same_thread=False)
 		self.agents_cursor = self.agents_conn.cursor()	
 
 
@@ -63,12 +87,18 @@ class Agents:
 			Returns 0 if sucess
 		"""
 		try:
-			self.agents_cursor.execute("""
-				INSERT INTO agents (name, listening_ip, listening_pt) VALUES (?, ?, ?)
-			""", name, listening_ip, listening_pt)
-			
-			# Return sucess 
-			return (0, "sucess")
+			agent_check = check(listening_ip, listening_pt)
+
+			if agent_check != 0:
+				return (1, agent_check[1])
+
+			else:
+				self.agents_cursor.execute("""
+					INSERT INTO agents (name, listening_ip, listening_pt) VALUES (?, ?, ?)
+				""", name, listening_ip, listening_pt)
+				
+				# Return sucess 
+				return (0, "sucess")
 		
 		except Exception as err:
 			# Return error 	
