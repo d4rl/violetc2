@@ -10,7 +10,7 @@
 * Easyly extension implementation
 
 # Todo:
-- [X] Encrypt connection with ssl
+- [ ] Encrypt connection with ssl
 - [ ] Add agent
 - [ ] Add metasploit support
 - [ ] Add Cobalt Strike support
